@@ -105,6 +105,16 @@ This keeps terminal and desktop sessions compatible and avoids creating a second
 
 In the composer, `Return` sends and `Shift+Return` inserts a newline by default. While Pi is working, you can steer the current turn or queue a follow-up; the Agent menu exposes both choices explicitly.
 
+## Composer status bar
+
+Settings → Composer → Status bar controls four independent indicators below the prompt: cumulative session tokens, current context usage, estimated session cost, and MCP servers. Hover usage indicators for details. Preferences are saved locally and do not change Pi configuration.
+
+Usage comes from the harness's session statistics and refreshes with session updates; unavailable values show `—`. Context usage is distinct from cumulative tokens and may be unavailable immediately after compaction. Cost is a reported USD estimate, not an account billing balance.
+
+Click MCP → Refresh status to inspect the running session's advertised `/mcp` extension command while idle. The server count and report are timestamped snapshots, include disabled servers, and are not a live connection count. Custom MCP extensions may display their report in ordinary extension notifications or dialogs instead. No separate MCP process or configuration scan is used.
+
+Run `bash Tools/SmokeTest/run-status.sh` for isolated preference, usage, and MCP report checks; these do not contact a model or MCP server.
+
 ## Extensions and packages
 
 For Pi-family harnesses, PiCode supports the extension interactions exposed by Pi's RPC mode, including commands, notifications, status, widgets, and native select, confirm, input, and editor dialogs.

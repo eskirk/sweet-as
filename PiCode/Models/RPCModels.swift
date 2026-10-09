@@ -522,6 +522,8 @@ struct PiSessionStats: Equatable {
     var totalMessages = 0
     var tokens = PiUsage.zero
     var cost: Double = 0
+    var hasTokenUsage = false
+    var hasCost = false
     var contextUsage: PiContextUsage?
 
     init(json: JSONValue?) {
@@ -533,6 +535,8 @@ struct PiSessionStats: Equatable {
         toolResults = json?.int("toolResults") ?? 0
         totalMessages = json?.int("totalMessages") ?? 0
         tokens = PiUsage(json: json?.object("tokens"))
+        hasTokenUsage = json?.object("tokens") != nil
+        hasCost = json?.double("cost") != nil
         cost = json?.double("cost") ?? 0
         if json?["contextUsage"] != nil { contextUsage = PiContextUsage(json: json?["contextUsage"]) }
     }

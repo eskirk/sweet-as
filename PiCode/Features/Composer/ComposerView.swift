@@ -187,6 +187,11 @@ struct ComposerView: View {
             }
 
             controlRow.padding(.top, ComposerMetrics.editorControlGap)
+            ComposerStatusBar(
+                preferences: state.preferences,
+                stats: controller.stats,
+                controller: controller
+            )
         }
         .padding(.horizontal, ComposerMetrics.boxHorizontalPadding)
         .padding(.top, ComposerMetrics.boxTopPadding)

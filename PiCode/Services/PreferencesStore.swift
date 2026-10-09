@@ -51,6 +51,10 @@ final class PreferencesStore {
 
     var appearance: Appearance
     var sendKey: SendKey
+    var showComposerTokens: Bool
+    var showComposerContext: Bool
+    var showComposerCost: Bool
+    var showComposerMCP: Bool
     var showInspector: Bool
     var showSidebar: Bool
     /// Whether the embedded terminal panel is open under the conversation.
@@ -90,6 +94,10 @@ final class PreferencesStore {
         self.defaults = defaults
         appearance = Appearance(rawValue: defaults.string(forKey: Keys.appearance) ?? "") ?? .system
         sendKey = SendKey(rawValue: defaults.string(forKey: Keys.sendKey) ?? "") ?? .returnKey
+        showComposerTokens = defaults.object(forKey: Keys.composerTokens) as? Bool ?? true
+        showComposerContext = defaults.object(forKey: Keys.composerContext) as? Bool ?? true
+        showComposerCost = defaults.object(forKey: Keys.composerCost) as? Bool ?? true
+        showComposerMCP = defaults.object(forKey: Keys.composerMCP) as? Bool ?? true
         showInspector = defaults.object(forKey: Keys.showInspector) as? Bool ?? true
         showSidebar = defaults.object(forKey: Keys.showSidebar) as? Bool ?? true
         showTerminal = defaults.object(forKey: Keys.showTerminal) as? Bool ?? false
@@ -122,6 +130,10 @@ final class PreferencesStore {
     func persist() {
         defaults.set(appearance.rawValue, forKey: Keys.appearance)
         defaults.set(sendKey.rawValue, forKey: Keys.sendKey)
+        defaults.set(showComposerTokens, forKey: Keys.composerTokens)
+        defaults.set(showComposerContext, forKey: Keys.composerContext)
+        defaults.set(showComposerCost, forKey: Keys.composerCost)
+        defaults.set(showComposerMCP, forKey: Keys.composerMCP)
         defaults.set(showInspector, forKey: Keys.showInspector)
         defaults.set(showSidebar, forKey: Keys.showSidebar)
         defaults.set(showTerminal, forKey: Keys.showTerminal)
@@ -170,6 +182,10 @@ final class PreferencesStore {
     private enum Keys {
         static let appearance = "appearance"
         static let sendKey = "sendKey"
+        static let composerTokens = "showComposerTokens"
+        static let composerContext = "showComposerContext"
+        static let composerCost = "showComposerCost"
+        static let composerMCP = "showComposerMCP"
         static let showInspector = "showInspector"
         static let showSidebar = "showSidebar"
         static let showTerminal = "showTerminal"
