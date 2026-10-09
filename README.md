@@ -64,6 +64,41 @@ Configure at least one provider using the harness's normal authentication flow b
 
 PiCode starts one harness process for each active session and uses the selected project as that process's working directory.
 
+### integrated sidebar terminal
+
+The right inspector has **Selection** and **Terminal** tabs. Terminal opens a native SwiftTerm shell in the selected session's working directory, independently of Pi. Clicking a file, change, or command returns to Selection without stopping the shell. Switching sessions or hiding the inspector retains each session's terminal. Exiting the shell shows a Restart action; closing a session, restarting its agent, or quitting the app stops its terminal. Terminal commands are not added to Pi's conversation. Detached jobs are not managed by the app.
+
+SwiftTerm is pinned to 1.20.0. In Xcode, approve its `SwiftTermBuildInfoPlugin` when prompted. Xcode 27 also needs the optional Metal toolchain (`DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -downloadComponent MetalToolchain`).
+
+For a locally signed development build:
+
+```sh
+DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild \
+  -project PiCode.xcodeproj -scheme PiCode -configuration Debug \
+  -destination 'platform=macOS,arch=arm64' \
+  -derivedDataPath "$HOME/Library/Developer/Xcode/DerivedData/sweet-as-terminal" \
+  CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= CODE_SIGN_STYLE=Manual \
+  PRODUCT_BUNDLE_IDENTIFIER=com.eskirk.sweet-as.terminal build
+```
+
+For unattended builds only after reviewing the pinned package's plugin, add `-skipPackagePluginValidation`. The plugin generates SwiftTerm build-version metadata. This is a per-command option, not a global trust change.
+
+After building, `bash Tools/SmokeTest/run-terminal.sh` checks terminal process behavior without launching Pie. Open the development build with:
+
+```sh
+open "$HOME/Library/Developer/Xcode/DerivedData/sweet-as-terminal/Build/Products/Debug/Pie.app"
+```
+
+The development bundle ID does not isolate Pi sessions or all Pie storage. Avoid using the same session in two running copies of Pie.
+
+## External terminal
+
+Choose **Settings → General → Workspace → External terminal** to use Terminal, iTerm2, or Ghostty. Missing apps are marked unavailable; an unavailable saved choice reports an error rather than silently falling back. All “Open in Terminal” actions use this preference and open a shell in the requested folder—not a Pi session handoff. This setting does not change the embedded SwiftTerm terminal.
+
+Terminal receives a safely quoted, self-removing `.command` file explicitly through Terminal.app. iTerm2 and Ghostty receive the directory directly through LaunchServices, supported by their [`application:openFile:`](https://github.com/gnachman/iTerm2/blob/master/sources/AppKit/iTermApplicationDelegate.m) and [`application(_:openFile:)`](https://github.com/ghostty-org/ghostty/blob/main/macos/Sources/App/AppDelegate.swift) handlers. No AppleScript, injected keystrokes, or shell commands are sent to existing terminal sessions. Window/tab placement follows the terminal app's preferences.
+
+Run `bash Tools/SmokeTest/run-external-terminal.sh` to check directory validation and script quoting without opening a terminal app. Actual launch, focus, and app-specific profile behavior still require a manual check.
+
 ## How it works
 
 ```text

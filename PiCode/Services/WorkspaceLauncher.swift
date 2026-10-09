@@ -4,9 +4,7 @@
 //
 //  Small, permission-free ways to hand a path to the rest of macOS.
 //
-//  PiCode deliberately avoids AppleScript automation prompts: "Open in Terminal"
-//  writes a tiny `.command` file and lets LaunchServices open it, which needs no
-//  automation entitlement and cannot be silently scripted by another app.
+//  external terminals open through LaunchServices without AppleScript automation.
 //
 
 import AppKit
@@ -14,30 +12,43 @@ import Foundation
 import UniformTypeIdentifiers
 
 enum WorkspaceLauncher {
-    /// Opens Terminal.app at `directory` without requesting automation access.
-    @discardableResult
-    static func openTerminal(at directory: String) -> URL? {
-        let sandbox = FileManager.default.temporaryDirectory
-            .appendingPathComponent("PiCode", isDirectory: true)
-        try? FileManager.default.createDirectory(at: sandbox, withIntermediateDirectories: true)
-
-        let scriptURL = sandbox.appendingPathComponent("PiCode-\(UUID().uuidString.prefix(8)).command")
-        let escaped = directory.replacingOccurrences(of: "'", with: "'\\''")
-        let script = """
-        #!/bin/zsh
-        # Written by PiCode so Terminal opens in the project directory.
-        rm -f "$0"
-        cd '\(escaped)' || exit 1
-        exec "${SHELL:-/bin/zsh}" -l
-        """
-        do {
-            try script.write(to: scriptURL, atomically: true, encoding: .utf8)
-            try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: scriptURL.path)
-        } catch {
-            return nil
+    @MainActor
+    static func openTerminal(at directory: String, application: ExternalTerminal) async throws {
+        try ExternalTerminal.validateDirectory(directory)
+        guard let applicationURL = application.applicationURL else {
+            throw ExternalTerminal.LaunchError.notInstalled(application.title)
         }
-        NSWorkspace.shared.open(scriptURL)
-        return scriptURL
+
+        var scriptURL: URL?
+        do {
+            let document: URL
+            if application.opensDirectory {
+                document = URL(fileURLWithPath: directory, isDirectory: true)
+            } else {
+                let folder = FileManager.default.temporaryDirectory
+                    .appendingPathComponent("PiCode", isDirectory: true)
+                try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+                let script = folder.appendingPathComponent("PiCode-\(UUID().uuidString).command")
+                scriptURL = script
+                try ExternalTerminal.terminalScript(directory: directory)
+                    .write(to: script, atomically: true, encoding: .utf8)
+                try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: script.path)
+                document = script
+            }
+
+            let configuration = NSWorkspace.OpenConfiguration()
+            configuration.activates = true
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                NSWorkspace.shared.open([document], withApplicationAt: applicationURL,
+                                        configuration: configuration) { _, error in
+                    if let error { continuation.resume(throwing: error) }
+                    else { continuation.resume() }
+                }
+            }
+        } catch {
+            if let scriptURL { try? FileManager.default.removeItem(at: scriptURL) }
+            throw error
+        }
     }
 
     static func reveal(_ path: String) {

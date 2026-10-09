@@ -25,6 +25,8 @@ final class PiSessionController {
 
     /// Canonical working directory for this session.
     let projectPath: String
+    // the controller owns the shell so hiding a view never ends terminal work.
+    let integratedTerminal = IntegratedTerminalSession()
     /// Project system prompt to append on launch, or `nil` when the project has
     /// none. Read once at init: changing it takes effect in the next process,
     /// which is exactly when Pi re-reads its system prompt anyway.
@@ -335,6 +337,7 @@ final class PiSessionController {
     }
 
     func stop() {
+        integratedTerminal.stop()
         localHistoryTask?.cancel()
         gitRefreshTask?.cancel()
         client?.stop()

@@ -51,6 +51,7 @@ final class PreferencesStore {
 
     var appearance: Appearance
     var sendKey: SendKey
+    var externalTerminal: ExternalTerminal
     var showInspector: Bool
     var showSidebar: Bool
     /// Whether the embedded terminal panel is open under the conversation.
@@ -90,6 +91,7 @@ final class PreferencesStore {
         self.defaults = defaults
         appearance = Appearance(rawValue: defaults.string(forKey: Keys.appearance) ?? "") ?? .system
         sendKey = SendKey(rawValue: defaults.string(forKey: Keys.sendKey) ?? "") ?? .returnKey
+        externalTerminal = ExternalTerminal(rawValue: defaults.string(forKey: Keys.externalTerminal) ?? "") ?? .terminal
         showInspector = defaults.object(forKey: Keys.showInspector) as? Bool ?? true
         showSidebar = defaults.object(forKey: Keys.showSidebar) as? Bool ?? true
         showTerminal = defaults.object(forKey: Keys.showTerminal) as? Bool ?? false
@@ -122,6 +124,7 @@ final class PreferencesStore {
     func persist() {
         defaults.set(appearance.rawValue, forKey: Keys.appearance)
         defaults.set(sendKey.rawValue, forKey: Keys.sendKey)
+        defaults.set(externalTerminal.rawValue, forKey: Keys.externalTerminal)
         defaults.set(showInspector, forKey: Keys.showInspector)
         defaults.set(showSidebar, forKey: Keys.showSidebar)
         defaults.set(showTerminal, forKey: Keys.showTerminal)
@@ -170,6 +173,7 @@ final class PreferencesStore {
     private enum Keys {
         static let appearance = "appearance"
         static let sendKey = "sendKey"
+        static let externalTerminal = "externalTerminal"
         static let showInspector = "showInspector"
         static let showSidebar = "showSidebar"
         static let showTerminal = "showTerminal"

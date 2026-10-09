@@ -70,7 +70,7 @@ struct HarnessAPISettingsView: View {
                     .foregroundStyle(.secondary)
                 HStack(spacing: 8) {
                     Button("Open Terminal") {
-                        _ = WorkspaceLauncher.openTerminal(at: NSHomeDirectory())
+                        state.openTerminal(at: NSHomeDirectory())
                         state.showToast("Run `omp`, then `/login` to configure Oh My Pi accounts.")
                     }
                     .controlSize(.small)

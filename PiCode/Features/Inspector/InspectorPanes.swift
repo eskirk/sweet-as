@@ -309,6 +309,7 @@ struct CodeViewer: View {
 /// view knowing about `AppState`.
 struct TerminalPane: View {
     var controller: PiSessionController
+    var onOpenTerminal: () -> Void
     var onClose: (() -> Void)? = nil
 
     @State private var command = ""
@@ -334,7 +335,7 @@ struct TerminalPane: View {
                 }
                 Spacer(minLength: 0)
                 Button("Open in Terminal") {
-                    WorkspaceLauncher.openTerminal(at: controller.projectPath)
+                    onOpenTerminal()
                 }
                 .controlSize(.small)
                 if let onClose {

@@ -37,7 +37,7 @@ struct LocalHarnessAccountSettingsView: View {
             HStack(spacing: 8) {
                 Button(status?.kind == .signedOut ? "Sign In…" : "Manage Account…") {
                     let command = LocalHarnessAccountService.loginCommand(for: descriptor.id)
-                    _ = WorkspaceLauncher.openTerminal(at: NSHomeDirectory())
+                    state.openTerminal(at: NSHomeDirectory())
                     state.showToast("Run `\(command)` in the terminal.")
                 }
                 .controlSize(.small)

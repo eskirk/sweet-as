@@ -147,12 +147,21 @@ final class AppState {
         case change(path: String)
     }
 
-    var inspectorArtifact: InspectorArtifact?
+    var inspectorArtifact: InspectorArtifact? {
+        didSet { inspectorTab = .selection }
+    }
+    enum InspectorTab: String, CaseIterable {
+        case selection = "Selection"
+        case terminal = "Terminal"
+    }
+    var inspectorTab: InspectorTab = .selection
 
     /// Whether the right panel is showing the notification list instead of the
     /// selected artifact. The bell in the content header toggles it; opening a
     /// file, diff, or tool result switches it back to the artifact.
-    var isNotificationsVisible = false
+    var isNotificationsVisible = false {
+        didSet { if isNotificationsVisible { inspectorTab = .selection } }
+    }
     /// Notification ids the user has already looked at. In-memory only: a badge
     /// means "new since you last opened the bell", not a fact stored about Pi.
     private var readNotificationIDs: Set<UUID> = []
@@ -771,7 +780,8 @@ final class AppState {
         let ordered = lastAccess.sorted { $0.value < $1.value }
         for (key, _) in ordered where key != selectedSessionKey {
             if controllers.count <= limit { break }
-            guard controllers[key]?.hasPendingWork != true else { continue }
+            guard controllers[key]?.hasPendingWork != true,
+                  controllers[key]?.integratedTerminal.isRunning != true else { continue }
             controllers[key]?.stop()
             controllers[key] = nil
             lastAccess[key] = nil
@@ -1079,8 +1089,13 @@ final class AppState {
     }
 
     func openTerminal(at path: String) {
-        if WorkspaceLauncher.openTerminal(at: path) == nil {
-            present(error: "Could not open Terminal. Check that Terminal.app is available.")
+        let application = preferences.externalTerminal
+        Task {
+            do {
+                try await WorkspaceLauncher.openTerminal(at: path, application: application)
+            } catch {
+                present(error: "Could not open \(application.title). \(error.localizedDescription)")
+            }
         }
     }
 }

@@ -2,13 +2,8 @@
 //  InspectorView.swift
 //  PiCode
 //
-//  The right panel: a single viewer, not a tab bar. Whatever the user last
-//  selected in the conversation — a file's contents, an edit's diff, a command's
-//  output, or any other tool's result — is shown here, with its path (or a title
-//  when there is no path) along the top.
-//
-//  Everything here is read from Pi or from the working tree on disk. The panel
-//  never edits files; Pi is the only actor that changes a project.
+//  the right panel keeps the selected artifact beside a session-owned shell.
+//  terminal commands run independently of Pi and can modify the working tree.
 //
 
 import SwiftUI
@@ -18,8 +13,25 @@ struct InspectorView: View {
     @AppStorage("inspectorTextWrap") private var wrapsText = true
 
     var body: some View {
-        Group {
-            if state.isNotificationsVisible {
+        VStack(spacing: 0) {
+            Picker("Inspector tab", selection: $state.inspectorTab) {
+                ForEach(AppState.InspectorTab.allCases, id: \.self) { tab in
+                    Text(tab.rawValue).tag(tab)
+                }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .padding(10)
+            Divider()
+            if state.inspectorTab == .terminal {
+                if let controller = state.activeController {
+                    IntegratedTerminalPane(session: controller.integratedTerminal, directory: controller.projectPath)
+                        .id(ObjectIdentifier(controller))
+                } else {
+                    EmptyStateView(systemImage: "terminal", title: "No session selected",
+                                   message: "Select a session to open its terminal.")
+                }
+            } else if state.isNotificationsVisible {
                 NotificationsPanel(state: state)
             } else if let controller = state.activeController, let artifact = state.inspectorArtifact {
                 VStack(spacing: 0) {

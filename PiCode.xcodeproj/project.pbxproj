@@ -6,6 +6,22 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		E11000000000000000000001 /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = E11000000000000000000002 /* SwiftTerm */; };
+/* End PBXBuildFile section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		E11000000000000000000003 /* SwiftTerm */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/migueldeicaza/SwiftTerm.git";
+			requirement = {kind = exactVersion; version = 1.20.0; };
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		E11000000000000000000002 /* SwiftTerm */ = {isa = XCSwiftPackageProductDependency; package = E11000000000000000000003; productName = SwiftTerm; };
+/* End XCSwiftPackageProductDependency section */
+
 /* Begin PBXFileReference section */
 		04C124633057E23700CFC5C2 /* Pie.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Pie.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +39,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E11000000000000000000001 /* SwiftTerm in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +82,7 @@
 			);
 			name = PiCode;
 			packageProductDependencies = (
+				E11000000000000000000002 /* SwiftTerm */,
 			);
 			productName = PiCode;
 			productReference = 04C124633057E23700CFC5C2 /* Pie.app */;
@@ -94,6 +112,7 @@
 			);
 			mainGroup = 04C1245A3057E23600CFC5C2;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (E11000000000000000000003 /* SwiftTerm */);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 04C124643057E23700CFC5C2 /* Products */;
 			projectDirPath = "";

@@ -38,7 +38,9 @@ struct TerminalPanel: View {
     var body: some View {
         VStack(spacing: 0) {
             resizeHandle
-            TerminalPane(controller: controller) { state.isTerminalVisible = false }
+            TerminalPane(controller: controller,
+                         onOpenTerminal: { state.openTerminal(at: controller.projectPath) },
+                         onClose: { state.isTerminalVisible = false })
         }
         .frame(height: state.terminalHeight)
         .background(AppTheme.background)

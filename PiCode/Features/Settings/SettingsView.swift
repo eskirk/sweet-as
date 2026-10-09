@@ -266,6 +266,20 @@ struct GeneralSettings: View {
             }
 
             SettingsSection("Workspace") {
+                SettingsRow("External terminal", detail: "Open a shell in the session folder. Does not transfer the Pi session or change the integrated terminal.") {
+                    Picker("External terminal", selection: Binding(
+                        get: { state.preferences.externalTerminal },
+                        set: { state.preferences.externalTerminal = $0; state.preferences.persist() }
+                    )) {
+                        ForEach(ExternalTerminal.allCases) { terminal in
+                            Text(terminal.title + (terminal.applicationURL == nil ? " (not installed)" : ""))
+                                .tag(terminal)
+                                .disabled(terminal.applicationURL == nil)
+                        }
+                    }
+                    .labelsHidden()
+                    .frame(width: 180)
+                }
                 SettingsRow("Show inspector", detail: "The panel with the session's changes and context.") {
                     Toggle("", isOn: Binding(
                         get: { state.isInspectorVisible },
