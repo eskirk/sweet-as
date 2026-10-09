@@ -206,6 +206,33 @@ final class PiSessionController {
 
     private(set) var dialogs: [ExtensionDialog] = []
     private(set) var extensionStatuses: [String: String] = [:]
+    private(set) var mcpStatusSnapshot: MCPStatusSnapshot?
+    private(set) var isInspectingMCP = false
+    private(set) var mcpInspectionError: String?
+
+    var canInspectMCP: Bool {
+        connection.isConnected && !runtime.isBusy && !isInspectingMCP
+            && commands.contains { $0.name == "mcp" && $0.source == .extension }
+    }
+
+    var mcpExtensionStatus: String? {
+        extensionStatuses["mcp"].map { ANSIParser.plainText($0) }
+    }
+
+    /// invoke only an advertised extension command, never a model prompt or a
+    /// second CLI process that would open its own MCP connections.
+    func inspectMCP() async {
+        guard canInspectMCP else { return }
+        isInspectingMCP = true
+        mcpInspectionError = nil
+        defer { isInspectingMCP = false }
+        do {
+            try await request(.prompt(message: "/mcp", images: [], behavior: nil),
+                              timeout: PiRPCClient.defaultTimeout)
+        } catch {
+            mcpInspectionError = error.localizedDescription
+        }
+    }
     /// Pending local deadlines for dialogs Pi will resolve on its own.
     private var dialogTimeouts: [String: Task<Void, Never>] = [:]
     private(set) var extensionWidgets: [WidgetPlacement: [String: [String]]] = [:]
@@ -1594,6 +1621,9 @@ final class PiSessionController {
             let level = ExtensionNotification.Level(rawValue: request.notifyType ?? "info") ?? .info
             let message = request.message ?? request.text ?? ""
             guard !message.isEmpty else { break }
+            if isInspectingMCP, let snapshot = MCPStatusSnapshot(report: ANSIParser.plainText(message)) {
+                mcpStatusSnapshot = snapshot
+            }
             notifications.append(ExtensionNotification(message: message, level: level))
             record(kind: .notify, title: message.oneLinePreview(limit: 160))
 
@@ -1912,6 +1942,9 @@ final class PiSessionController {
         summarizationNote = nil
         extensionWidgets = [:]
         extensionStatuses = [:]
+        mcpStatusSnapshot = nil
+        mcpInspectionError = nil
+        isInspectingMCP = false
         titleTask?.cancel()
         titleTask = nil
         titleGenerationStarted = false

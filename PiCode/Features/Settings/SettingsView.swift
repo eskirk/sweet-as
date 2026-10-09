@@ -327,6 +327,13 @@ struct ComposerSettings: View {
                 }
             }
 
+            SettingsSection("Status bar") {
+                statusToggle("Tokens used", detail: "Cumulative session usage, including cached tokens.", keyPath: \.showComposerTokens)
+                statusToggle("Context usage", detail: "Current context tokens and the model's context limit.", keyPath: \.showComposerContext)
+                statusToggle("Session cost", detail: "Estimated USD cost reported by the harness, not your account's billed balance.", keyPath: \.showComposerCost)
+                statusToggle("MCP servers", detail: "Inspect the session's MCP servers and explicitly refresh its status report. Requires a /mcp extension command.", keyPath: \.showComposerMCP)
+            }
+
             SettingsSection("Defaults for new sessions") {
                 SettingsRow("Thinking level") {
                     Picker("", selection: Binding(
@@ -369,6 +376,18 @@ struct ComposerSettings: View {
                     )
                 }
             }
+        }
+    }
+
+    private func statusToggle(_ title: String, detail: String, keyPath: ReferenceWritableKeyPath<PreferencesStore, Bool>) -> some View {
+        SettingsRow(title, detail: detail) {
+            Toggle("", isOn: Binding(
+                get: { state.preferences[keyPath: keyPath] },
+                set: { state.preferences[keyPath: keyPath] = $0; state.preferences.persist() }
+            ))
+            .labelsHidden()
+            .toggleStyle(.switch)
+            .accessibilityLabel(title)
         }
     }
 }
